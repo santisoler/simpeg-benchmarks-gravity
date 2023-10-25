@@ -13,6 +13,8 @@ from utilities import (
     create_survey,
 )
 
+PLOT = False
+
 
 # Define mesh
 mesh_shape = (30, 30, 30)
@@ -90,18 +92,19 @@ if not results_dir.is_dir():
 dataset.to_netcdf(results_dir / "benchmark_n-receivers_serial.nc")
 
 # Plot
-for parallel in parallelism:
-    for simulation_type in simulation_types:
-        for engine in engines:
-            results = dataset.sel(engine=engine, simulation_type=simulation_type)
-            plt.errorbar(
-                x=results.n_receivers,
-                y=results.times,
-                yerr=results.errors,
-                marker="o",
-                linestyle="none",
-                label=engine,
-            )
-        plt.title(f"Parallel: {parallel} | {simulation_type}")
-        plt.legend()
-        plt.show()
+if PLOT:
+    for parallel in parallelism:
+        for simulation_type in simulation_types:
+            for engine in engines:
+                results = dataset.sel(engine=engine, simulation_type=simulation_type)
+                plt.errorbar(
+                    x=results.n_receivers,
+                    y=results.times,
+                    yerr=results.errors,
+                    marker="o",
+                    linestyle="none",
+                    label=engine,
+                )
+            plt.title(f"Parallel: {parallel} | {simulation_type}")
+            plt.legend()
+            plt.show()
