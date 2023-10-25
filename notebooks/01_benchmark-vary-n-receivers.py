@@ -89,7 +89,7 @@ dataset = xr.Dataset(data_vars=data_vars, coords=coords)
 results_dir = Path(__file__).parent / ".." / "results"
 if not results_dir.is_dir():
     results_dir.mkdir(parents=True)
-dataset.to_netcdf(results_dir / "benchmark_n-receivers_serial.nc")
+dataset.to_netcdf(results_dir / "benchmark_n-receivers.nc")
 
 # Plot
 if PLOT:
