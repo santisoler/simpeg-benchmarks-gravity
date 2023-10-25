@@ -57,12 +57,12 @@ for index, (parallel, store_sensitivities, engine, shape) in enumerate(pool):
         store_sensitivities=store_sensitivities,
     )
     if engine == "choclo":
-        kwargs = dict(choclo_parallel=parallel)
+        kwargs["choclo_parallel"] = parallel
     else:
         if parallel:
-            kwargs = dict(n_processes=None)
+            kwargs["n_processes"] = None
         else:
-            kwargs = dict(n_processes=1)
+            kwargs["n_processes"] = 1
 
     benchmarker = SimulationBenchmarker(n_runs=n_runs, **kwargs)
     runtime, std = benchmarker.benchmark(density)
