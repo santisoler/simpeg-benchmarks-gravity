@@ -8,6 +8,7 @@ from SimPEG import maps
 from SimPEG.potential_fields import gravity as simpeg_gravity
 
 from utilities import (
+    SimulationBenchmarker,
     delete_simulation,
     get_region,
     create_observation_points,
@@ -43,61 +44,43 @@ for store_sensitivities, engine in pool:
     else:
         kwargs = dict(n_processes=1)
 
+    times = []
+    times_std = []
     for shape in shapes:
         grid_coords = create_observation_points(get_region(mesh), shape, height)
         survey = create_survey(grid_coords)
         model_map = maps.IdentityMap(nP=density.size)
 
-        times = []
-        print(store_sensitivities, engine, shape)
-        for i in range(n_runs):
-            if i == 0 and engine == "choclo":
-                # Compile first
-                simulation = simpeg_gravity.simulation.Simulation3DIntegral(
-                    survey=survey,
-                    mesh=mesh,
-                    ind_active=active_cells,
-                    rhoMap=model_map,
-                    engine=engine,
-                    store_sensitivities=store_sensitivities,
-                    **kwargs,
-                )
-                simulation.fields(density)
-                delete_simulation(simulation)
+        kwargs = dict(
+            survey=survey,
+            mesh=mesh,
+            ind_active=active_cells,
+            rhoMap=model_map,
+            engine=engine,
+            store_sensitivities=store_sensitivities,
+        )
+        if engine == "choclo":
+            kwargs["choclo_parallel"] = False
+        else:
+            kwargs["n_processes"] = 1
 
-            simulation = simpeg_gravity.simulation.Simulation3DIntegral(
-                survey=survey,
-                mesh=mesh,
-                ind_active=active_cells,
-                rhoMap=model_map,
-                engine=engine,
-                store_sensitivities=store_sensitivities,
-                **kwargs,
-            )
+        benchmarker = SimulationBenchmarker(n_runs=1, **kwargs)
+        runtime, time_std = benchmarker.benchmark(density)
 
-            # Benchmark
-            start = time.perf_counter()
-            result_simpeg = simulation.fields(density)
-            end = time.perf_counter()
-            delete_simulation(simulation)
+        times.append(runtime)
+        times_std.append(time_std)
 
-            times.append(end - start)
-
-        # Get mean and std
-        times = np.array(times)
-        key = f"{engine}-{store_sensitivities}"
-        if key not in results:
-            results[key] = []
-            results[key + "-std"] = []
-        results[key].append(np.mean(times))
-        results[key + "-std"].append(np.std(times))
+    # Get mean and std
+    key = f"{engine}-{store_sensitivities}"
+    results[key] = times
+    results[key + "-std"] = times_std
 
 
 # Generate a dataframe
 df = pd.DataFrame(results).set_index("n_receivers")
 
 # Save to a csv file
-results_dir = Path(__file__) / ".." / "results"
+results_dir = Path(__file__).parent / ".." / "results"
 if not results_dir.is_dir():
     results_dir.mkdir(parents=True)
 df.to_csv(results_dir / "benchmark_n-receivers_serial.csv")

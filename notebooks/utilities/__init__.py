@@ -1,3 +1,4 @@
+from ._benchmarker import SimulationBenchmarker
 from ._utils import (
     delete_simulation,
     get_region,
