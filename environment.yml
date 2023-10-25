@@ -1,0 +1,19 @@
+name: simpeg-benchmarks
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  - numpy
+  - scipy
+  - matplotlib
+  - verde
+  # Jupyter
+  - jupyter
+  - jupytext
+  # SimPEG and dependencies
+  - dask
+  - choclo
+  - discretize
+  - pip:
+    - git+https://github.com/simpeg/simpeg.git@gravity-choclo
