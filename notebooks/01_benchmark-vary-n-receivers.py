@@ -103,18 +103,18 @@ if not results_dir.is_dir():
 df.to_csv(results_dir / "benchmark_n-receivers_serial.csv")
 
 
-simulation_type = "ram"
-for engine in engines:
-    key = f"{engine}-{simulation_type}"
-    times = df[key]
-    errors = df[key + "-std"]
-    plt.errorbar(
-        x=times.index,
-        y=times,
-        yerr=errors,
-        marker="o",
-        linestyle="none",
-        label=engine,
-    )
-plt.legend()
-plt.show()
+for simulation_type in simulation_types:
+    for engine in engines:
+        key = f"{engine}-{simulation_type}"
+        times = df[key]
+        errors = df[key + "-std"]
+        plt.errorbar(
+            x=times.index,
+            y=times,
+            yerr=errors,
+            marker="o",
+            linestyle="none",
+            label=engine,
+        )
+    plt.legend()
+    plt.show()
