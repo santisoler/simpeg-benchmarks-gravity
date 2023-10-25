@@ -1,8 +1,7 @@
 from pathlib import Path
-import time
 import itertools
 import numpy as np
-import pandas as pd
+import xarray as xr
 import matplotlib.pyplot as plt
 from SimPEG import maps
 from SimPEG.potential_fields import gravity as simpeg_gravity
@@ -24,80 +23,87 @@ mesh, active_cells, density = create_tensor_mesh_and_density(mesh_shape, mesh_sp
 
 
 # Configure benchmarks
+# --------------------
 n_runs = 3
-
 height = 100
-n_receivers_per_side = [10, 20, 30, 40, 50, 60, 100]
+n_receivers_per_side = [10, 20, 30, 40]
+
+# Define iterator over different scenarios
 shapes = [(n, n) for n in n_receivers_per_side]
 simulation_types = ["ram", "forward_only"]
 engines = ["geoana", "choclo"]
-pool = itertools.product(simulation_types, engines)
 
-results = {
-    "n_receivers": [np.prod(shape) for shape in shapes],
-}
+# Build iterator
+iterators = (simulation_types, engines, shapes)
+pool = itertools.product(*iterators)
 
-for store_sensitivities, engine in pool:
+# Allocate results arrays
+array_shape = tuple(len(i) for i in iterators)
+times = np.empty(array_shape)
+errors = np.empty(array_shape)
+
+for index, (store_sensitivities, engine, shape) in enumerate(pool):
     # Run on single thread
     if engine == "choclo":
         kwargs = dict(choclo_parallel=False)
     else:
         kwargs = dict(n_processes=1)
 
-    times = []
-    times_std = []
-    for shape in shapes:
-        grid_coords = create_observation_points(get_region(mesh), shape, height)
-        survey = create_survey(grid_coords)
-        model_map = maps.IdentityMap(nP=density.size)
+    grid_coords = create_observation_points(get_region(mesh), shape, height)
+    survey = create_survey(grid_coords)
+    model_map = maps.IdentityMap(nP=density.size)
 
-        kwargs = dict(
-            survey=survey,
-            mesh=mesh,
-            ind_active=active_cells,
-            rhoMap=model_map,
-            engine=engine,
-            store_sensitivities=store_sensitivities,
-        )
-        if engine == "choclo":
-            kwargs["choclo_parallel"] = False
-        else:
-            kwargs["n_processes"] = 1
+    kwargs = dict(
+        survey=survey,
+        mesh=mesh,
+        ind_active=active_cells,
+        rhoMap=model_map,
+        engine=engine,
+        store_sensitivities=store_sensitivities,
+    )
+    if engine == "choclo":
+        kwargs["choclo_parallel"] = False
+    else:
+        kwargs["n_processes"] = 1
 
-        benchmarker = SimulationBenchmarker(n_runs=1, **kwargs)
-        runtime, time_std = benchmarker.benchmark(density)
+    benchmarker = SimulationBenchmarker(n_runs=n_runs, **kwargs)
+    runtime, std = benchmarker.benchmark(density)
 
-        times.append(runtime)
-        times_std.append(time_std)
-
-    # Get mean and std
-    key = f"{engine}-{store_sensitivities}"
-    results[key] = times
-    results[key + "-std"] = times_std
+    # Save result to arrays
+    indices = np.unravel_index(index, array_shape)
+    times[indices] = runtime
+    errors[indices] = std
 
 
-# Generate a dataframe
-df = pd.DataFrame(results).set_index("n_receivers")
+# Build Dataset
+dims = ["simulation_type", "engine", "n_receivers"]
+coords = {
+    "n_receivers": [np.prod(shape) for shape in shapes],
+    "engine": engines,
+    "simulation_type": simulation_types,
+}
 
-# Save to a csv file
+data_vars = {"times": (dims, times), "errors": (dims, errors)}
+dataset = xr.Dataset(data_vars=data_vars, coords=coords)
+
+# Save to file
 results_dir = Path(__file__).parent / ".." / "results"
 if not results_dir.is_dir():
     results_dir.mkdir(parents=True)
-df.to_csv(results_dir / "benchmark_n-receivers_serial.csv")
+dataset.to_netcdf(results_dir / "benchmark_n-receivers_serial.nc")
 
-
+# Plot
 for simulation_type in simulation_types:
     for engine in engines:
-        key = f"{engine}-{simulation_type}"
-        times = df[key]
-        errors = df[key + "-std"]
+        results = dataset.sel(engine=engine, simulation_type=simulation_type)
         plt.errorbar(
-            x=times.index,
-            y=times,
-            yerr=errors,
+            x=results.n_receivers,
+            y=results.times,
+            yerr=results.errors,
             marker="o",
             linestyle="none",
             label=engine,
         )
+    plt.title(f"{simulation_type}")
     plt.legend()
     plt.show()
