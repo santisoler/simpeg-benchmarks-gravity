@@ -4,11 +4,9 @@ import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
 from SimPEG import maps
-from SimPEG.potential_fields import gravity as simpeg_gravity
 
 from utilities import (
     SimulationBenchmarker,
-    delete_simulation,
     get_region,
     create_observation_points,
     create_tensor_mesh_and_density,
@@ -24,17 +22,18 @@ mesh, active_cells, density = create_tensor_mesh_and_density(mesh_shape, mesh_sp
 
 # Configure benchmarks
 # --------------------
-n_runs = 3
+n_runs = 10
 height = 100
-n_receivers_per_side = [10, 20, 30, 40]
+n_receivers_per_side = [10, 20, 30, 40, 50, 60, 70]
 
 # Define iterator over different scenarios
 shapes = [(n, n) for n in n_receivers_per_side]
 simulation_types = ["ram", "forward_only"]
 engines = ["geoana", "choclo"]
+parallelism = [False, True]
 
 # Build iterator
-iterators = (simulation_types, engines, shapes)
+iterators = (parallelism, simulation_types, engines, shapes)
 pool = itertools.product(*iterators)
 
 # Allocate results arrays
@@ -42,13 +41,7 @@ array_shape = tuple(len(i) for i in iterators)
 times = np.empty(array_shape)
 errors = np.empty(array_shape)
 
-for index, (store_sensitivities, engine, shape) in enumerate(pool):
-    # Run on single thread
-    if engine == "choclo":
-        kwargs = dict(choclo_parallel=False)
-    else:
-        kwargs = dict(n_processes=1)
-
+for index, (parallel, store_sensitivities, engine, shape) in enumerate(pool):
     grid_coords = create_observation_points(get_region(mesh), shape, height)
     survey = create_survey(grid_coords)
     model_map = maps.IdentityMap(nP=density.size)
@@ -62,9 +55,12 @@ for index, (store_sensitivities, engine, shape) in enumerate(pool):
         store_sensitivities=store_sensitivities,
     )
     if engine == "choclo":
-        kwargs["choclo_parallel"] = False
+        kwargs = dict(choclo_parallel=parallel)
     else:
-        kwargs["n_processes"] = 1
+        if parallel:
+            kwargs = dict(n_processes=None)
+        else:
+            kwargs = dict(n_processes=1)
 
     benchmarker = SimulationBenchmarker(n_runs=n_runs, **kwargs)
     runtime, std = benchmarker.benchmark(density)
@@ -76,11 +72,12 @@ for index, (store_sensitivities, engine, shape) in enumerate(pool):
 
 
 # Build Dataset
-dims = ["simulation_type", "engine", "n_receivers"]
+dims = ["parallel", "simulation_type", "engine", "n_receivers"]
 coords = {
-    "n_receivers": [np.prod(shape) for shape in shapes],
-    "engine": engines,
+    "parallel": parallelism,
     "simulation_type": simulation_types,
+    "engine": engines,
+    "n_receivers": [np.prod(shape) for shape in shapes],
 }
 
 data_vars = {"times": (dims, times), "errors": (dims, errors)}
@@ -93,17 +90,18 @@ if not results_dir.is_dir():
 dataset.to_netcdf(results_dir / "benchmark_n-receivers_serial.nc")
 
 # Plot
-for simulation_type in simulation_types:
-    for engine in engines:
-        results = dataset.sel(engine=engine, simulation_type=simulation_type)
-        plt.errorbar(
-            x=results.n_receivers,
-            y=results.times,
-            yerr=results.errors,
-            marker="o",
-            linestyle="none",
-            label=engine,
-        )
-    plt.title(f"{simulation_type}")
-    plt.legend()
-    plt.show()
+for parallel in parallelism:
+    for simulation_type in simulation_types:
+        for engine in engines:
+            results = dataset.sel(engine=engine, simulation_type=simulation_type)
+            plt.errorbar(
+                x=results.n_receivers,
+                y=results.times,
+                yerr=results.errors,
+                marker="o",
+                linestyle="none",
+                label=engine,
+            )
+        plt.title(f"Parallel: {parallel} | {simulation_type}")
+        plt.legend()
+        plt.show()
