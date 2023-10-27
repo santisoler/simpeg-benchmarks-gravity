@@ -19,16 +19,17 @@ PLOT = False
 # --------------------
 n_runs = 10
 height = 100
-shape = (50, 50)  # grid of receivers
-mesh_shape = (100, 100, 100)
+shape = (70, 70)  # grid of receivers
+mesh_spacings = (10, 10, 5)
+mesh_shape = (50, 50, 50)
 
 # Define iterator over different scenarios
-simulation_types = ["ram", "forward_only"]
+store_sensitivities = "ram"
 engines = ["geoana", "choclo"]
-number_of_processes = [1, 5, 10, 20, 30, 40, None]
+number_of_processes = [1, 5, 10, 20, 30, numba.config.NUMBA_NUM_THREADS]
 
 # Build iterator
-iterators = (simulation_types, engines, number_of_processes)
+iterators = (engines, number_of_processes)
 pool = itertools.product(*iterators)
 
 # Allocate results arrays
@@ -36,9 +37,11 @@ array_shape = tuple(len(i) for i in iterators)
 times = np.empty(array_shape)
 errors = np.empty(array_shape)
 
-for index, (store_sensitivities, engine, n_processes) in enumerate(pool):
+for index, (engine, n_processes) in enumerate(pool):
+
+    print(f"engine: {engine}, n_processes: {n_processes}")
+
     # Define mesh
-    mesh_spacings = (10, 10, 5)
     mesh, active_cells, density = create_tensor_mesh_and_density(
         mesh_shape, mesh_spacings
     )
@@ -56,11 +59,11 @@ for index, (store_sensitivities, engine, n_processes) in enumerate(pool):
         store_sensitivities=store_sensitivities,
     )
     if engine == "choclo":
-        numba.set_num_threads(n_processes)
         if n_processes == 1:
             kwargs["choclo_parallel"] = False
         else:
             kwargs["choclo_parallel"] = True
+        numba.set_num_threads(n_processes)
     else:
         kwargs["n_processes"] = n_processes
 
@@ -72,11 +75,9 @@ for index, (store_sensitivities, engine, n_processes) in enumerate(pool):
     times[indices] = runtime
     errors[indices] = std
 
-
 # Build Dataset
-dims = ["simulation_type", "engine", "n_processes"]
+dims = ["engine", "n_processes"]
 coords = {
-    "simulation_type": simulation_types,
     "engine": engines,
     "n_processes": number_of_processes,
 }
