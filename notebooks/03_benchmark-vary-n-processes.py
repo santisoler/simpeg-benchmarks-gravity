@@ -24,12 +24,12 @@ mesh_spacings = (10, 10, 5)
 mesh_shape = (50, 50, 50)
 
 # Define iterator over different scenarios
-store_sensitivities = "ram"
+simulation_types = ["ram", "forward_only"]
 engines = ["geoana", "choclo"]
 number_of_processes = [1, 5, 10, 20, 30, numba.config.NUMBA_NUM_THREADS]
 
 # Build iterator
-iterators = (engines, number_of_processes)
+iterators = (engines, simulation_types, number_of_processes)
 pool = itertools.product(*iterators)
 
 # Allocate results arrays
@@ -37,8 +37,11 @@ array_shape = tuple(len(i) for i in iterators)
 times = np.empty(array_shape)
 errors = np.empty(array_shape)
 
-for index, (engine, n_processes) in enumerate(pool):
-    print(f"engine: {engine}, n_processes: {n_processes}")
+for index, (engine, store_sensitivities, n_processes) in enumerate(pool):
+    print(
+        f"engine: {engine}, store_sens: {store_sensitivities}, "
+        f"n_processes: {n_processes}"
+    )
 
     # Define mesh
     mesh, active_cells, density = create_tensor_mesh_and_density(
@@ -75,9 +78,10 @@ for index, (engine, n_processes) in enumerate(pool):
     errors[indices] = std
 
 # Build Dataset
-dims = ["engine", "n_processes"]
+dims = ["engine", "simulation_type", "n_processes"]
 coords = {
     "engine": engines,
+    "simulation_type": simulation_types,
     "n_processes": number_of_processes,
 }
 
