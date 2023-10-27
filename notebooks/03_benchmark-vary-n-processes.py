@@ -17,7 +17,7 @@ PLOT = False
 
 # Configure benchmarks
 # --------------------
-n_runs = 10
+n_runs = 3
 height = 100
 shape = (70, 70)  # grid of receivers
 mesh_spacings = (10, 10, 5)
@@ -38,7 +38,6 @@ times = np.empty(array_shape)
 errors = np.empty(array_shape)
 
 for index, (engine, n_processes) in enumerate(pool):
-
     print(f"engine: {engine}, n_processes: {n_processes}")
 
     # Define mesh

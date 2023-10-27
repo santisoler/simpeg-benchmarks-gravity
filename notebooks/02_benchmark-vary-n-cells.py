@@ -2,7 +2,6 @@ from pathlib import Path
 import itertools
 import numpy as np
 import xarray as xr
-import matplotlib.pyplot as plt
 from SimPEG import maps
 
 from utilities import (
@@ -17,10 +16,10 @@ PLOT = False
 
 # Configure benchmarks
 # --------------------
-n_runs = 10
+n_runs = 3
 height = 100
 shape = (50, 50)  # grid of receivers
-n_cells_per_axis = [10, 20, 30, 40, 50, 60, 70]
+n_cells_per_axis = [20, 40, 60, 80, 100]
 
 # Define iterator over different scenarios
 mesh_shapes = [(n, n, n) for n in n_cells_per_axis]
@@ -38,6 +37,11 @@ times = np.empty(array_shape)
 errors = np.empty(array_shape)
 
 for index, (parallel, store_sensitivities, engine, mesh_shape) in enumerate(pool):
+    print(
+        f"parallel: {parallel}, store_sens: {store_sensitivities}, "
+        f"engine: {engine}, mesh_shape: {mesh_shape}"
+    )
+
     # Define mesh
     mesh_spacings = (10, 10, 5)
     mesh, active_cells, density = create_tensor_mesh_and_density(
@@ -90,21 +94,3 @@ results_dir = Path(__file__).parent / ".." / "results"
 if not results_dir.is_dir():
     results_dir.mkdir(parents=True)
 dataset.to_netcdf(results_dir / "benchmark_n-cells.nc")
-
-# Plot
-if PLOT:
-    for parallel in parallelism:
-        for simulation_type in simulation_types:
-            for engine in engines:
-                results = dataset.sel(engine=engine, simulation_type=simulation_type)
-                plt.errorbar(
-                    x=results.n_cells,
-                    y=results.times,
-                    yerr=results.errors,
-                    marker="o",
-                    linestyle="none",
-                    label=engine,
-                )
-            plt.title(f"Parallel: {parallel} | {simulation_type}")
-            plt.legend()
-            plt.show()
