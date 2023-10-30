@@ -23,7 +23,7 @@ class SimulationBenchmarker:
     def benchmark(self, model):
         # Run a first round to compile Numba code
         if "engine" in self.kwargs and self.kwargs["engine"] == "choclo":
-            self._benchmark_single(model)
+            self._benchmark_single(self.simulation, model)
 
         # Build iterator to time the simulation
         iterator = range(self.n_runs)
@@ -33,7 +33,7 @@ class SimulationBenchmarker:
         # Benchmark the simulation
         times = []
         for i in iterator:
-            time = self._benchmark_single(model)
+            time = self._benchmark_single(self.simulation, model)
             times.append(time)
 
         # Compute mean and std
@@ -45,9 +45,12 @@ class SimulationBenchmarker:
 
         return (mean, std)
 
-    def _benchmark_single(self, model):
+    def _benchmark_single(self, simulation, model):
+        # Benchmark simulation
         start = time.perf_counter()
-        self.simulation.dpred(model)
+        simulation.dpred(model)
         end = time.perf_counter()
+        # Clean up memory
+        del simulation._G
         gc.collect()
         return end - start
