@@ -51,7 +51,7 @@ times = np.empty(array_shape)
 errors = np.empty(array_shape)
 
 
-for index, engine in enumerate(pool):
+for index, (engine,) in enumerate(pool):
     print(f"engine: {engine}")
 
     kwargs = dict(
