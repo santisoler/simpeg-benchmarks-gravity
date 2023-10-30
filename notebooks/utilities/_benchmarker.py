@@ -46,8 +46,13 @@ class SimulationBenchmarker:
         return (mean, std)
 
     def _benchmark_single(self, model):
+        # Build simulation
+        simulation = self.simulation
+        # Benchmark the simulation
         start = time.perf_counter()
-        self.simulation.dpred(model)
+        simulation.dpred(model)
         end = time.perf_counter()
+        # Clean up memory
+        del simulation._G
         gc.collect()
         return end - start
