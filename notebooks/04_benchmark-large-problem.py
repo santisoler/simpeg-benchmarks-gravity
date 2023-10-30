@@ -35,7 +35,7 @@ model_map = maps.IdentityMap(nP=density.size)
 
 # Configure benchmarks
 # --------------------
-n_runs = 3
+n_runs = 2
 
 # Define iterator over different scenarios
 simulation_types = ["ram", "forward_only"]
