@@ -19,7 +19,7 @@ PLOT = False
 
 
 # Define mesh
-mesh_shape = (110, 110, 110)
+mesh_shape = (100, 100, 100)
 mesh_spacings = (10, 10, 5)
 mesh, active_cells, density = create_tensor_mesh_and_density(mesh_shape, mesh_spacings)
 
