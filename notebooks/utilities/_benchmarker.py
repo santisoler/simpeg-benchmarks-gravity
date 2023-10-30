@@ -54,5 +54,6 @@ class SimulationBenchmarker:
         end = time.perf_counter()
         # Clean up memory
         del simulation._G
+        del simulation
         gc.collect()
         return end - start
