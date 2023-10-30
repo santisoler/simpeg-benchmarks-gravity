@@ -25,7 +25,7 @@ mesh, active_cells, density = create_tensor_mesh_and_density(mesh_shape, mesh_sp
 
 # Define survey
 height = 100
-shape = (150, 150)
+shape = (120, 120)
 grid_coords = create_observation_points(get_region(mesh), shape, height)
 survey = create_survey(grid_coords)
 
@@ -36,13 +36,13 @@ model_map = maps.IdentityMap(nP=density.size)
 # Configure benchmarks
 # --------------------
 n_runs = 2
+store_sensitivities = "ram"
 
 # Define iterator over different scenarios
-simulation_types = ["ram", "forward_only"]
 engines = ["geoana", "choclo"]
 
 # Build iterator
-iterators = (simulation_types, engines)
+iterators = (engines,)
 pool = itertools.product(*iterators)
 
 # Allocate results arrays
@@ -51,8 +51,8 @@ times = np.empty(array_shape)
 errors = np.empty(array_shape)
 
 
-for index, (store_sensitivities, engine) in enumerate(pool):
-    print(f"store_sens: {store_sensitivities}, engine: {engine}")
+for index, engine in enumerate(pool):
+    print(f"engine: {engine}")
 
     kwargs = dict(
         survey=survey,
@@ -78,8 +78,8 @@ for index, (store_sensitivities, engine) in enumerate(pool):
 
 
 # Build Dataset
-dims = ["simulation_type", "engine"]
-coords = {"simulation_type": simulation_types, "engine": engines}
+dims = ["engine"]
+coords = {"engine": engines}
 
 data_vars = {"times": (dims, times), "errors": (dims, errors)}
 dataset = xr.Dataset(data_vars=data_vars, coords=coords)
