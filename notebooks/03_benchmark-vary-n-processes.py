@@ -25,7 +25,7 @@ mesh_shape = (50, 50, 50)
 
 # Define iterator over different scenarios
 simulation_types = ["ram", "forward_only"]
-engines = ["geoana", "choclo"]
+engines = ["choclo", "geoana"]
 number_of_processes = [1, 5, 10, 20, 30, numba.config.NUMBA_NUM_THREADS]
 
 # Build iterator
@@ -86,7 +86,8 @@ coords = {
 }
 
 data_vars = {"times": (dims, times), "errors": (dims, errors)}
-dataset = xr.Dataset(data_vars=data_vars, coords=coords)
+attrs = dict(n_cells=np.prod(mesh_shape), n_receivers=np.prod(shape))
+dataset = xr.Dataset(data_vars=data_vars, coords=coords, attrs=attrs)
 
 # Save to file
 results_dir = Path(__file__).parent / ".." / "results"

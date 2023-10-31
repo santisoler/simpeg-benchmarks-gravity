@@ -35,11 +35,11 @@ model_map = maps.IdentityMap(nP=density.size)
 
 # Configure benchmarks
 # --------------------
-n_runs = {"choclo": 2, "geoana": 5}
+n_runs = 1
 store_sensitivities = "ram"
 
 # Define iterator over different scenarios
-engines = ["geoana", "choclo"]
+engines = ["choclo", "geoana"]
 
 # Build iterator
 iterators = (engines,)
@@ -68,7 +68,7 @@ for index, (engine,) in enumerate(pool):
     else:
         kwargs["n_processes"] = None
 
-    benchmarker = SimulationBenchmarker(n_runs=n_runs[engine], **kwargs)
+    benchmarker = SimulationBenchmarker(n_runs=n_runs, **kwargs)
     runtime, std = benchmarker.benchmark(density)
 
     # Save result to arrays
@@ -82,7 +82,8 @@ dims = ["engine"]
 coords = {"engine": engines}
 
 data_vars = {"times": (dims, times), "errors": (dims, errors)}
-dataset = xr.Dataset(data_vars=data_vars, coords=coords)
+attrs = dict(n_cells=np.prod(mesh_shape), n_receivers=np.prod(shape))
+dataset = xr.Dataset(data_vars=data_vars, coords=coords, attrs=attrs)
 
 # Save to file
 results_dir = Path(__file__).parent / ".." / "results"

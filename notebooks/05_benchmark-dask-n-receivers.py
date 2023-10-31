@@ -78,7 +78,8 @@ coords = {
 }
 
 data_vars = {"times": (dims, times), "errors": (dims, errors)}
-dataset = xr.Dataset(data_vars=data_vars, coords=coords)
+attrs = dict(n_cells=np.prod(mesh_shape))
+dataset = xr.Dataset(data_vars=data_vars, coords=coords, attrs=attrs)
 
 # Save to file
 results_dir = Path(__file__).parent / ".." / "results"

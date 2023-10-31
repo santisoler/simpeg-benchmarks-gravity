@@ -30,7 +30,7 @@ n_receivers_per_side = [20, 40, 60, 80, 100, 120]
 # Define iterator over different scenarios
 shapes = [(n, n) for n in n_receivers_per_side]
 simulation_types = ["ram", "forward_only"]
-engines = ["geoana", "choclo"]
+engines = ["choclo", "geoana"]
 parallelism = [False, True]
 
 # Build iterator
@@ -87,7 +87,8 @@ coords = {
 }
 
 data_vars = {"times": (dims, times), "errors": (dims, errors)}
-dataset = xr.Dataset(data_vars=data_vars, coords=coords)
+attrs = dict(n_cells=np.prod(mesh_shape))
+dataset = xr.Dataset(data_vars=data_vars, coords=coords, attrs=attrs)
 
 # Save to file
 results_dir = Path(__file__).parent / ".." / "results"

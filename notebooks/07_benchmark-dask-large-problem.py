@@ -36,11 +36,11 @@ model_map = maps.IdentityMap(nP=density.size)
 
 # Configure benchmarks
 # --------------------
-n_runs = 2
+n_runs = 1
 store_sensitivities = "ram"
 
 # Define iterator over different scenarios
-engines = ["geoana", "choclo"]
+engines = ["choclo", "geoana"]
 
 # Build iterator
 iterators = (engines,)
@@ -78,7 +78,8 @@ dims = ["engine"]
 coords = {"engine": engines}
 
 data_vars = {"times": (dims, times), "errors": (dims, errors)}
-dataset = xr.Dataset(data_vars=data_vars, coords=coords)
+attrs = dict(n_cells=np.prod(mesh_shape), n_receivers=np.prod(shape))
+dataset = xr.Dataset(data_vars=data_vars, coords=coords, attrs=attrs)
 
 # Save to file
 results_dir = Path(__file__).parent / ".." / "results"
