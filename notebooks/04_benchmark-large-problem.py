@@ -35,7 +35,7 @@ model_map = maps.IdentityMap(nP=density.size)
 
 # Configure benchmarks
 # --------------------
-n_runs = 2
+n_runs = {"choclo": 2, "geoana": 5}
 store_sensitivities = "ram"
 
 # Define iterator over different scenarios
@@ -68,7 +68,7 @@ for index, (engine,) in enumerate(pool):
     else:
         kwargs["n_processes"] = None
 
-    benchmarker = SimulationBenchmarker(n_runs=n_runs, **kwargs)
+    benchmarker = SimulationBenchmarker(n_runs=n_runs[engine], **kwargs)
     runtime, std = benchmarker.benchmark(density)
 
     # Save result to arrays
