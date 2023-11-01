@@ -9,6 +9,7 @@ dependencies:
   - matplotlib
   - verde
   - tqdm
+  - time
   # Jupyter
   - jupyter
   - jupytext
