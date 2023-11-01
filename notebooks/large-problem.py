@@ -13,10 +13,13 @@ from utilities import (
 )
 
 
-valid_engines = ("choclo", "geoana")
+valid_engines = ("choclo", "geoana", "dask")
 engine = str(sys.argv[1]).strip()
 if engine not in valid_engines:
     raise ValueError(f"Invalid engine '{engine}'.")
+if engine == "dask":
+    engine = "geoana"
+    import SimPEG.dask
 
 
 # Define mesh
