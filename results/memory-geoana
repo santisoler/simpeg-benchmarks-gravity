@@ -1,0 +1,23 @@
+	Command being timed: "python notebooks/large-problem.py geoana"
+	User time (seconds): 4906.99
+	System time (seconds): 1279.54
+	Percent of CPU this job got: 1760%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:51.31
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 112785960
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 10325
+	Minor (reclaiming a frame) page faults: 184243387
+	Voluntary context switches: 2561140
+	Involuntary context switches: 665878
+	Swaps: 0
+	File system inputs: 156576
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
