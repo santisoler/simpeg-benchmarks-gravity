@@ -12,11 +12,18 @@ from utilities import (
     create_survey,
 )
 
+ENGINES = ("choclo", "geoana", "dask")
+STORE_SENSITIVITIES = ("ram", "forward_only")
 
-valid_engines = ("choclo", "geoana", "dask")
+# Handle shell arguments
 engine = str(sys.argv[1]).strip()
-if engine not in valid_engines:
+store_sensitivities = str(sys.argv[2]).strip()
+if engine not in ENGINES:
     raise ValueError(f"Invalid engine '{engine}'.")
+if store_sensitivities not in STORE_SENSITIVITIES:
+    raise ValueError(f"Invalid store_sensitivities '{store_sensitivities}'.")
+
+# Use dask if required
 if engine == "dask":
     engine = "geoana"
     import SimPEG.dask
@@ -39,10 +46,7 @@ model_map = maps.IdentityMap(nP=density.size)
 
 # Configure benchmarks
 # --------------------
-store_sensitivities = "ram"
-
-
-print(f"engine: {engine}")
+print(f"engine: {engine}, store_sensitivities: {store_sensitivities}")
 
 kwargs = dict(
     survey=survey,
