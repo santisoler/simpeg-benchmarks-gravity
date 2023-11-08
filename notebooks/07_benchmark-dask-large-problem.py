@@ -26,7 +26,7 @@ mesh, active_cells, density = create_tensor_mesh_and_density(mesh_shape, mesh_sp
 
 # Define survey
 height = 100
-shape = (120, 120)
+shape = (300, 300)
 grid_coords = create_observation_points(get_region(mesh), shape, height)
 survey = create_survey(grid_coords)
 
