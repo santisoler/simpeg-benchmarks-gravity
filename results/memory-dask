@@ -1,20 +1,20 @@
 	Command being timed: "python notebooks/large-problem.py dask"
-	User time (seconds): 5898.28
-	System time (seconds): 526.79
-	Percent of CPU this job got: 1893%
-	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:39.37
+	User time (seconds): 9134.28
+	System time (seconds): 1630.07
+	Percent of CPU this job got: 2353%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 7:37.45
 	Average shared text size (kbytes): 0
 	Average unshared data size (kbytes): 0
 	Average stack size (kbytes): 0
 	Average total size (kbytes): 0
-	Maximum resident set size (kbytes): 62124252
+	Maximum resident set size (kbytes): 356964660
 	Average resident set size (kbytes): 0
-	Major (requiring I/O) page faults: 465
-	Minor (reclaiming a frame) page faults: 25415160
-	Voluntary context switches: 3167928
-	Involuntary context switches: 753342
+	Major (requiring I/O) page faults: 1
+	Minor (reclaiming a frame) page faults: 52776481
+	Voluntary context switches: 4774345
+	Involuntary context switches: 41522
 	Swaps: 0
-	File system inputs: 164432
+	File system inputs: 0
 	File system outputs: 0
 	Socket messages sent: 0
 	Socket messages received: 0
