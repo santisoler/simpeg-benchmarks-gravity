@@ -38,9 +38,10 @@ bash run.sh
 ```
 
 > **Important**
-> These benchmarks were designed to be run on a machine with 125GB of ram and
+> Most of the benchmarks were designed to be run on a machine with 125GB of ram and
 > a minimum of 30 threads. If your system don't meet these specs, you can
 > modify the scripts to adequate them to your needs.
-
+>
+> The benchmarks for the "large problem" require more memory: up to ~800GB.
 
 [miniforge]: https://github.com/conda-forge/miniforge
