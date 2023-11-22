@@ -62,9 +62,9 @@ for index, (engine, store_sensitivities, n_processes) in enumerate(pool):
     )
     if engine == "choclo":
         if n_processes == 1:
-            kwargs["choclo_parallel"] = False
+            kwargs["numba_parallel"] = False
         else:
-            kwargs["choclo_parallel"] = True
+            kwargs["numba_parallel"] = True
         numba.set_num_threads(n_processes)
     else:
         kwargs["n_processes"] = n_processes

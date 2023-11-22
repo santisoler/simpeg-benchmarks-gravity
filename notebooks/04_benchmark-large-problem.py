@@ -64,7 +64,7 @@ for index, (engine,) in enumerate(pool):
     )
 
     if engine == "choclo":
-        kwargs["choclo_parallel"] = True
+        kwargs["numba_parallel"] = True
     else:
         kwargs["n_processes"] = None
 

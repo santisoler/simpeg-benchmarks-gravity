@@ -61,7 +61,7 @@ for index, (parallel, store_sensitivities, engine, mesh_shape) in enumerate(pool
         store_sensitivities=store_sensitivities,
     )
     if engine == "choclo":
-        kwargs["choclo_parallel"] = parallel
+        kwargs["numba_parallel"] = parallel
     else:
         if parallel:
             kwargs["n_processes"] = None
