@@ -18,4 +18,4 @@ dependencies:
   - choclo
   - discretize
   - pip:
-    - git+https://github.com/simpeg/simpeg.git@gravity-choclo
+    - git+https://github.com/simpeg/simpeg.git@eb07ef133a6c5e1714ff1af181147cb172eba97c
